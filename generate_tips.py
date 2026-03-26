@@ -5,9 +5,14 @@ Run once locally, commit the images. Not needed at runtime.
 
 import os
 import base64
+from dotenv import load_dotenv
 from google import genai
 
-client = genai.Client(api_key="AIzaSyCTKsiKRWtOk8xNo7xmUDH1m1eZVoFM1nw")
+load_dotenv()
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    raise RuntimeError("請在 .env 檔案中設定 GEMINI_API_KEY=你的key")
+client = genai.Client(api_key=api_key)
 
 TIPS_PROMPTS = [
     # (filename, english prompt for illustration)

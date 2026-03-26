@@ -4,9 +4,14 @@ Includes: 1 hero banner + 12 tip illustrations.
 """
 
 import os
+from dotenv import load_dotenv
 from google import genai
 
-client = genai.Client(api_key="AIzaSyCIXKIXY-W41FbceTEfYEBD5HvAiMXK-U4")
+load_dotenv()
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    raise RuntimeError("請在 .env 檔案中設定 GEMINI_API_KEY=你的key")
+client = genai.Client(api_key=api_key)
 MODEL = "gemini-3-pro-image-preview"  # Nano Banana Pro — 唯一允許的生圖模型
 
 # Premium style directive shared by all prompts
