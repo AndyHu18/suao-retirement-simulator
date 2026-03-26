@@ -475,7 +475,7 @@ def run_simulation(params, rng=None, stress_scenario=None):
 
         # --- Revenue ---
         # P7: 月費隨通膨調漲（漲幅 = 成本通膨的 70%，高齡住戶對漲價敏感）
-        fee_inflation = cost_inflation_accum ** params.get('fee_inflation_ratio', 0.7)
+        fee_inflation = cost_inflation_accum ** params.get('fee_inflation_ratio', 0.0)
         adjusted_monthly_fee = params['monthly_fee'] * fee_inflation
         fee_revenue = total_occupied * adjusted_monthly_fee * 3  # quarterly
 
