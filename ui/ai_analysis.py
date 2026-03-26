@@ -424,7 +424,6 @@ def render_ai_analysis(params, mc=None, stress=None):
         render_tip_to_container(ai_tip_box, tid, title, body, 0, len(ai_tips), "AI 分析準備中")
 
         comparison = run_comparison_scenarios(params, n_runs=300)
-        ai_tip_box.empty()
         ai_progress.empty()
 
         # Get median run data
@@ -434,7 +433,12 @@ def render_ai_analysis(params, mc=None, stress=None):
         # Build data package
         user_msg = _build_opus_prompt(params, metrics, comparison, r, stress)
 
-        # Stream response
+        # Stream response with tip carousel
+        ai_progress.caption("AI 正在撰寫深度分析報告...")
+        _tip_idx = [0]
+        _last_switch = [time.time()]
+        TIP_INTERVAL = 8
+
         with st.container():
             placeholder = st.empty()
             full_text = ""
@@ -448,9 +452,21 @@ def render_ai_analysis(params, mc=None, stress=None):
                     for text in stream.text_stream:
                         full_text += text
                         placeholder.markdown(full_text)
+                        # 每 8 秒換一條小知識
+                        now = time.time()
+                        if now - _last_switch[0] >= TIP_INTERVAL:
+                            _tip_idx[0] = (_tip_idx[0] + 1) % len(ai_tips)
+                            _last_switch[0] = now
+                            tid, title, body = ai_tips[_tip_idx[0]]
+                            render_tip_to_container(
+                                ai_tip_box, tid, title, body,
+                                _tip_idx[0], len(ai_tips), "AI 撰寫報告中")
             except Exception as e:
                 st.error(f"AI 分析失敗: {e}")
                 return
+
+        ai_tip_box.empty()
+        ai_progress.empty()
 
         st.session_state.opus_report = full_text
         st.session_state.consultant_history = [
@@ -458,23 +474,34 @@ def render_ai_analysis(params, mc=None, stress=None):
             {"role": "assistant", "content": full_text},
         ]
 
-    # Display cached report
-    elif 'opus_report' in st.session_state:
-        st.markdown('<div class="ai-output">', unsafe_allow_html=True)
+    # Display cached report (after rerun or when not clicking run_btn)
+    elif 'opus_report' in st.session_state and st.session_state.opus_report:
+        st.markdown("#### 深度顧問報告")
         st.markdown(st.session_state.opus_report)
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # --- Follow-up chat ---
-    if 'consultant_history' in st.session_state:
+    if 'consultant_history' in st.session_state and len(st.session_state.consultant_history) >= 2:
+        # Show all follow-up exchanges (skip the first assistant msg = opus report, already shown above)
+        for i, msg in enumerate(st.session_state.consultant_history):
+            # Skip first user msg (prompt) and first assistant msg (opus report)
+            if i <= 1:
+                continue
+            if msg['role'] == 'user':
+                st.markdown(f"> **你的追問：** {msg['content']}")
+            elif msg['role'] == 'assistant':
+                st.markdown("---")
+                st.markdown(msg['content'])
+
         st.divider()
         st.markdown("##### 繼續追問")
 
         followup = st.text_area("你的問題", height=80,
-            placeholder="例如：保險綁定具體怎麼談？如果首期改300戶？")
+            placeholder="例如：保險綁定具體怎麼談？如果首期改300戶？",
+            key="followup_input")
 
-        c1, c2, c3 = st.columns(3)
+        c1, c2, _ = st.columns(3)
         with c1:
-            if st.button("送出追問", type="primary") and followup:
+            if st.button("送出追問", type="primary", key="followup_btn") and followup:
                 st.session_state.consultant_history.append(
                     {"role": "user", "content": followup})
                 try:
@@ -491,20 +518,12 @@ def render_ai_analysis(params, mc=None, stress=None):
                 except Exception as e:
                     st.error(f"追問失敗: {e}")
         with c2:
-            if st.button("複製全文"):
+            if st.button("複製全文", key="copy_btn"):
                 full = "\n\n---\n\n".join(
                     m['content'] for m in st.session_state.consultant_history
                     if m['role'] == 'assistant'
                 )
                 st.code(full, language=None)
-
-        # Display conversation history
-        for msg in st.session_state.consultant_history:
-            if msg['role'] == 'assistant' and msg['content'] != st.session_state.get('opus_report'):
-                st.markdown("---")
-                st.markdown(msg['content'])
-            elif msg['role'] == 'user' and msg['content'] != st.session_state.consultant_history[0].get('content'):
-                st.markdown(f"> **你的追問：** {msg['content']}")
 
 
 MODEL_METHODOLOGY = """## 模型計算邏輯摘要
