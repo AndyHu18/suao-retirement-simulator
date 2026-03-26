@@ -37,7 +37,7 @@ st.set_page_config(
 )
 
 st.title("🏘️ 養生造鎮決策模擬器")
-st.caption("宜蘭蘇澳 · 8,000 戶 · 25 年蒙地卡羅模擬")
+st.caption("宜蘭蘇澳 · 8,000 戶 · 25 年蒙地卡羅模擬 · v2.0")
 
 
 def _params_hash(params):
