@@ -106,8 +106,8 @@ with st.expander("如何使用這個模擬器？", expanded=True):
     </div>
     """, unsafe_allow_html=True)
 
-    tab_start, tab_logic, tab_charts, tab_choose = st.tabs([
-        "快速上手", "計算原理", "圖表怎麼看", "策略怎麼選",
+    tab_start, tab_logic, tab_charts, tab_choose, tab_tips_top = st.tabs([
+        "快速上手", "計算原理", "圖表怎麼看", "策略怎麼選", "小知識",
     ])
 
     with tab_start:
@@ -312,6 +312,31 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 | 壓力測試全掛 | 安全邊際太薄 | 提高現金儲備或縮小首期 |
 """)
 
+    with tab_tips_top:
+        _render_tips_page()
+
+
+def _render_tips_page():
+    """Render all tips as browsable cards with images."""
+    from ui.tip_carousel import TIPS, get_tip_image_path
+    st.markdown("### 養生造鎮小知識")
+    st.caption("模擬跑的時候會隨機出現這些小知識。這裡可以一次看完全部。")
+    for i, (tid, title, body) in enumerate(TIPS):
+        img_path = get_tip_image_path(tid)
+        with st.container():
+            if img_path:
+                col_img, col_text = st.columns([1, 3])
+                with col_img:
+                    st.image(img_path, width=180)
+                with col_text:
+                    st.markdown(f"**{title}**")
+                    st.markdown(body)
+            else:
+                st.markdown(f"**{title}**")
+                st.markdown(body)
+            if i < len(TIPS) - 1:
+                st.markdown("---")
+
 
 def _params_hash(params):
     items = []
@@ -463,14 +488,17 @@ if mc is not None:
 else:
     render_dashboard_single(single, params)
 
-# === Tabs: AI Analysis + Methodology ===
-tab_ai, tab_method = st.tabs(["AI 分析報告", "方法論"])
+# === Tabs: AI Analysis + Methodology + Tips ===
+tab_ai, tab_method, tab_tips = st.tabs(["AI 分析報告", "方法論", "小知識"])
 
 with tab_ai:
     render_ai_analysis(params, mc=mc, stress=stress)
 
 with tab_method:
     render_methodology()
+
+with tab_tips:
+    _render_tips_page()
 
 # --- Footer ---
 st.markdown(f"""
