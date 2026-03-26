@@ -409,10 +409,25 @@ def render_ai_analysis(params, mc=None, stress=None):
         return
 
     if run_btn:
-        # Run comparison scenarios
-        with st.spinner("正在跑 4 組對比模擬..."):
-            from engine.monte_carlo import run_comparison_scenarios
-            comparison = run_comparison_scenarios(params, n_runs=300)
+        # Run comparison scenarios with tip carousel
+        import time
+        from ui.tip_carousel import get_shuffled_tips, render_tip_card
+        from engine.monte_carlo import run_comparison_scenarios
+
+        ai_tips = get_shuffled_tips()
+        ai_tip_box = st.empty()
+        ai_progress = st.empty()
+        ai_progress.caption("正在跑 4 組對比模擬...")
+
+        # Show first tip
+        tid, title, body = ai_tips[0]
+        ai_tip_box.markdown(
+            render_tip_card(tid, title, body, 0, len(ai_tips), "AI 分析準備中"),
+            unsafe_allow_html=True)
+
+        comparison = run_comparison_scenarios(params, n_runs=300)
+        ai_tip_box.empty()
+        ai_progress.empty()
 
         # Get median run data
         mid = np.argsort(mc['cf_curves'][:, -1])[mc['n_runs'] // 2]

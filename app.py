@@ -341,75 +341,32 @@ if run_mc:
     st.session_state.pop('haiku_summary', None)
     st.session_state.pop('opus_report', None)
 
-    # --- 模擬等待期間的教學提示（隨機輪播） ---
-    import random
-    _TIPS = [
-        ("這個模擬器最重要的發現",
-         "單獨開一個配套效果有限，但**保險＋信託＋醫療**同時開會產生「飛輪效應」——"
-         "信任高 → 人多 → 入住率高 → 口碑好 → 信任更高。試著同時開啟三個看看。"),
-        ("為什麼預設配置是虧損的？",
-         "預設故意什麼都沒開，讓你看到「不做任何事」的後果。"
-         "這不是 bug，是設計——方便你一步步加上配套，看每個改善多少。"),
-        ("怎麼看懂走勢圖",
-         "藍色粗線是「最可能的走勢」，淺藍區域是「運氣好壞的範圍」。"
-         "線在零線上方 = 賺錢，下方 = 賠錢。箭頭標示回本的年份。"),
-        ("保險綁定是最大槓桿",
-         "跟壽險公司合作，讓保戶優先入住。在左邊「需求引擎」區勾選「保險綁定通路」，"
-         "通常能讓報酬率改善 10 個百分點以上。"),
-        ("壓力測試在測什麼？",
-         "模擬器會故意模擬 6 種壞事：經濟崩盤、退費潮、信任危機、成本暴漲、複合災難、完全沒新人。"
-         "看你的策略能不能撐過這些考驗。"),
-        ("蘇澳冷泉是全球稀缺資源",
-         "全球只有兩處碳酸冷泉（義大利+蘇澳）。開啟溫泉選項不只增加收入，"
-         "還能提升品牌差異化 20%，是蘇澳專案最獨特的優勢。"),
-        ("什麼是「品牌老化」？",
-         "社區住戶會老。如果沒有新年輕住戶加入，社區平均年齡越來越高，"
-         "對新客群的吸引力會下降。「品牌老化對抗」就是解決這個問題的策略。"),
-        ("進階模式能做什麼？",
-         "打開左上的「進階模式」，可以微調每一個底層參數、自訂每期蓋幾戶、"
-         "查看每個參數的可信度標記（紅色 = 建議用真實數據替換）。"),
-        ("AI 顧問分析怎麼用？",
-         "模擬跑完後，底部會出現「啟動深度顧問分析」按鈕。"
-         "AI 會生成完整的七部分報告，包含因果分析、行動方案、風險地圖，還能追問。"),
-        ("全球養老地產的關鍵數字",
-         "入住率 85% 以上才算健康，75% 以下就有存亡風險。"
-         "現金儲備至少 250 天。人事成本佔營運的 60-70%。品牌老化週期約 15-25 年。"),
-        ("收支分解圖（瀑布圖）怎麼看",
-         "綠色柱子是收入來源（押金、月費、其他），紅色是支出（建設、營運、退費、利息）。"
-         "最右邊藍色柱是淨結果。看哪根最大，就知道問題在哪。"),
-        ("H 會館的導客效果",
-         "如果有 H 會館，每年 6,000 位高淨值客人中，約 3% 會主動諮詢、12% 會成交。"
-         "這等於每年多 20+ 戶的穩定來源，不靠廣告。"),
-    ]
-    # 輪播小知識 + progress bar
-    random.shuffle(_TIPS)
+    # --- 模擬等待期間的小知識輪播（隨機 + 配圖 + 閱讀速度） ---
+    import time
+    from ui.tip_carousel import get_shuffled_tips, render_tip_card
+
+    tips = get_shuffled_tips()
     tip_box = st.empty()
     progress_bar = st.progress(0, text=f"正在模擬 {mc_runs:,} 種不同情境...")
-    _tip_idx = [0]  # mutable for closure
+    _tip_state = [0, time.time()]  # [current_index, last_switch_time]
+    TIP_INTERVAL = 8  # 秒 — 正常閱讀速度
 
-    def _render_tip(idx):
-        tip = _TIPS[idx % len(_TIPS)]
-        tip_box.markdown(f"""
-        <div style="background:white;border:1.5px solid #e0ddd7;border-radius:12px;
-            padding:24px 28px;margin:16px 0;max-width:700px;">
-            <div style="color:#b08d57;font-weight:600;font-size:0.85em;
-                letter-spacing:0.06em;margin-bottom:8px;">模擬進行中 · 小知識 ({idx + 1}/{len(_TIPS)})</div>
-            <div style="color:#1a1a1a;font-size:1.1em;font-weight:600;margin-bottom:8px;">
-                {tip[0]}</div>
-            <div style="color:#4a4a4a;font-size:0.95em;line-height:1.7;">{tip[1]}</div>
-        </div>
-        """, unsafe_allow_html=True)
+    def _show_tip(idx):
+        tid, title, body = tips[idx % len(tips)]
+        html = render_tip_card(tid, title, body, idx % len(tips), len(tips), "模擬進行中")
+        tip_box.markdown(html, unsafe_allow_html=True)
 
     def _on_progress(done, total):
-        pct = int(done / total * 70)  # MC 佔 0-70%
+        pct = int(done / total * 70)
         progress_bar.progress(pct, text=f"已完成 {done:,} / {total:,} 次模擬...")
-        # 每 10% 換一條小知識
-        new_idx = done * len(_TIPS) // total
-        if new_idx != _tip_idx[0]:
-            _tip_idx[0] = new_idx
-            _render_tip(new_idx)
+        # 基於時間輪播，不基於進度
+        now = time.time()
+        if now - _tip_state[1] >= TIP_INTERVAL:
+            _tip_state[0] += 1
+            _tip_state[1] = now
+            _show_tip(_tip_state[0])
 
-    _render_tip(0)
+    _show_tip(0)
     mc = run_monte_carlo(params, n_runs=mc_runs, seed=42, progress_callback=_on_progress)
     metrics = extract_metrics(mc)
     mc['_metrics'] = metrics
