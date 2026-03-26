@@ -102,9 +102,9 @@ def render_tip_to_container(container, tip_id, title, body, index, total, contex
 
         img_path = get_tip_image_path(tip_id)
         if img_path:
-            col_img, col_text = st.columns([1, 4])
+            col_img, col_text = st.columns([1, 3])
             with col_img:
-                st.image(img_path, width=120)
+                st.image(img_path, width=180)
             with col_text:
                 st.markdown(f"**{title}**")
                 st.markdown(body_md, unsafe_allow_html=False)

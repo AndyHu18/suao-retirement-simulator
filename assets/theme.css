@@ -385,6 +385,21 @@ hr,
   font-style: italic;
 }
 
+/* Sidebar control focus/hover */
+.stSelectbox [data-baseweb="select"]:hover,
+.stMultiSelect [data-baseweb="select"]:hover {
+  border-color: #b08d57 !important;
+  box-shadow: 0 0 0 1px rgba(176, 141, 87, 0.3) !important;
+}
+
+.stSlider [data-baseweb="slider"] [role="slider"]:focus {
+  box-shadow: 0 0 0 3px rgba(176, 141, 87, 0.2) !important;
+}
+
+.stCheckbox label:hover {
+  color: #b08d57 !important;
+}
+
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .guide-card-grid {

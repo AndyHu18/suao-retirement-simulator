@@ -47,6 +47,20 @@ def render_sidebar():
                                     help="跑幾次不同情境的模擬。越多越準但越慢。")
         params['_mc_runs'] = mc_runs
 
+        _mc_label = st.select_slider(
+            "整體不確定性水位",
+            options=["保守（低擾動）", "中等（預設）", "積極（高擾動）"],
+            value="中等（預設）",
+            help="控制所有 MC 擾動參數的幅度。"
+                 "保守 = σ×0.5，中等 = 預設值，積極 = σ×1.5。",
+        )
+        _mc_map = {
+            "保守（低擾動）": 0.5,
+            "中等（預設）": 1.0,
+            "積極（高擾動）": 1.5,
+        }
+        params['mc_uncertainty_level'] = _mc_map[_mc_label]
+
         # Quick guide
         st.markdown("""<div class="sidebar-guide">
             <b>操作方式：</b>選策略 → 右邊即時預覽 → 滿意後按「開始模擬」<br>
@@ -61,7 +75,7 @@ def render_sidebar():
                     unsafe_allow_html=True)
 
         cap = st.selectbox("資本結構", list(CAPITAL_STRUCTURE_PRESETS.keys()) + ['自訂（輸入實際數字）'],
-                            index=3, help="資金從哪來、利息多少、能等多久回本。")
+                            index=3, help="資金從哪來、利息多少、能等多久回本。自有資金=保守低風險、壽險合作=積極高槓桿、專案融資=中等、混合=平衡方案")
         if cap == '自訂（輸入實際數字）':
             params['total_budget'] = st.number_input("實際總預算（億）", 100, 2000, 800) * 1e8
             params['annual_cost_of_capital'] = st.number_input("年化資金成本（%）", 0.5, 15.0, 3.5) / 100
@@ -78,7 +92,7 @@ def render_sidebar():
                         CAPITAL_STRUCTURE_PRESETS[cap]['payback_tolerance_years'])
 
         dep = st.selectbox("押金退還", list(DEPOSIT_REFUND_PRESETS.keys()) + ['自訂（輸入實際數字）'], index=0,
-                            help="住戶押金怎麼退？直接影響擠兌風險。")
+                            help="住戶押金怎麼退？直接影響擠兌風險。擠兌風險 = 很多住戶同時要求退押金。退費比例越高、風險越大。")
         if dep == '自訂（輸入實際數字）':
             params['deposit_amount'] = st.number_input("押金（萬）", 500, 4000, 2500) * 1e4
             params['monthly_fee'] = st.number_input("月費（萬）", 5, 20, 10) * 1e4
@@ -95,7 +109,7 @@ def render_sidebar():
 
         trust_opts = {'無信託': 0, '基本信託': 1, '獨立信託+審批': 2, '北卡級完全保護': 3}
         trust = st.selectbox("押金保護等級", list(trust_opts.keys()), index=0,
-                              help="住戶的幾千萬押金怎麼保管。等級越高住戶越安心。")
+                              help="住戶的幾千萬押金怎麼保管。等級越高住戶越安心。無信託=最簡單但住戶風險高；基本信託=台灣標準做法；獨立信託=最安全但營運資金被隔離；完全保護=北卡州標準、成本最高")
         params['trust_mechanism_level'] = trust_opts[trust]
         params['trust_independent'] = trust_opts[trust] >= 2
 
@@ -115,7 +129,7 @@ def render_sidebar():
             else:
                 params['insurance_factor'] = 2.0
 
-        exp = st.selectbox("體驗行銷", list(EXPERIENCE_PRESETS.keys()), index=1,
+        exp = st.selectbox("試住體驗方案", list(EXPERIENCE_PRESETS.keys()), index=1,
                             help="讓潛在客戶「先來住住看」。花了錢但效果取決於執行品質。")
         exp_preset = EXPERIENCE_PRESETS[exp]
         params['experience_level'] = exp_preset['experience_level']
@@ -139,13 +153,15 @@ def render_sidebar():
         if adv:
             params['marketing_budget_monthly'] = st.slider("行銷預算（萬/月）", 100, 5000, 500, 100) * 1e4
             st.markdown("---")
-            st.caption("[低可信度]以下為低可信度參數（建議用實際數據替換）")
+            st.markdown('<div style="background:#f5f3ef;border-left:3px solid #ccc;padding:8px 12px;border-radius:4px;margin:8px 0;">', unsafe_allow_html=True)
+            st.caption("以下參數可信度較低，建議用實際數據替換")
             params['target_pool'] = st.number_input(
                 "目標客群池", 10000, 100000, int(params['target_pool']), 1000,
                 help="[低可信度]低可信度（±50%+）。大台北65歲以上高淨值人口估計。有實際市調數據請替換。")
             params['base_annual_conversion'] = st.slider(
                 "基礎年轉化率 (%)", 0.1, 2.0, float(params['base_annual_conversion']) * 100, 0.1,
                 help="[低可信度]低可信度（±50%+）。目標客群每年轉為入住的比率。全球CCRC平均約0.5%。") / 100
+            st.markdown('</div>', unsafe_allow_html=True)
 
         st.divider()
 
@@ -155,7 +171,7 @@ def render_sidebar():
                     unsafe_allow_html=True)
 
         if adv:
-            params['ccrc_care_ratio'] = st.slider("介護棟佔比%", 0, 30, 15,
+            params['ccrc_care_ratio'] = st.slider("需照護長者比例 (%)", 0, 30, 15,
                 help="社區裡留多少比例給需要照護的長者") / 100
 
         med = st.selectbox("醫療整合", list(MEDICAL_PRESETS.keys()), index=0,
@@ -170,25 +186,27 @@ def render_sidebar():
         params['onsen_cost_multiplier'] = ONSEN_PRESETS[onsen]['onsen_cost_multiplier']
 
         op = st.selectbox("營運夥伴", list(OPERATION_PARTNER_PRESETS.keys()), index=0,
-                           help="誰來經營日常營運。效果有 30% 不確定性。")
+                           help="誰來經營日常營運。效果有 30% 不確定性。自行營運=成本低但經驗有限；專業運營商=營運品質高但需分潤；合資=兩者折衷")
         params.update(OPERATION_PARTNER_PRESETS[op])
         if adv:
             params['debranding_level'] = st.slider("去標籤化程度", 1, 3, 2,
                 help="1=養生語言 2=生活方式 3=純生活品牌")
             st.markdown("---")
-            st.caption("[低可信度]以下為低可信度參數（建議用實際數據替換）")
+            st.markdown('<div style="background:#f5f3ef;border-left:3px solid #ccc;padding:8px 12px;border-radius:4px;margin:8px 0;">', unsafe_allow_html=True)
+            st.caption("以下參數可信度較低，建議用實際數據替換")
             params['staff_ratio'] = st.slider(
                 "每戶員工配比", 0.2, 0.8, float(params['staff_ratio']), 0.05,
                 help="[低可信度]低可信度（±50%+）。每位住戶對應的員工數。業界0.3-0.6。")
             params['avg_staff_cost_monthly'] = st.number_input(
                 "員工平均月薪", 30000, 80000, int(params['avg_staff_cost_monthly']), 1000,
                 help="[低可信度]低可信度（±50%+）。蘇澳地區實際行情。")
+            st.markdown('</div>', unsafe_allow_html=True)
 
         st.divider()
 
         # ===== Group 4: Development Pace =====
         st.markdown(header(CALENDAR, "開發節奏", level=3), unsafe_allow_html=True)
-        st.markdown('<div class="sidebar-guide">8 期怎麼蓋、怎麼防止社區「變老」。品牌老化對抗可多選疊加。</div>',
+        st.markdown('<div class="sidebar-guide">8 期怎麼蓋、怎麼防止社區「變老」。社區活力維持方案可多選疊加。</div>',
                     unsafe_allow_html=True)
 
         if adv:
@@ -204,11 +222,11 @@ def render_sidebar():
                 params['phase_activation_threshold'] = st.slider("入住率門檻%", 60, 95, 80) / 100
                 params['min_cash_days_for_activation'] = st.slider("最低儲備天數", 100, 500, 250, 50)
 
-            selected_cm = st.multiselect("品牌老化對抗", list(BRAND_AGING_OPTIONS.keys()),
+            selected_cm = st.multiselect("社區活力維持方案", list(BRAND_AGING_OPTIONS.keys()),
                                           help="可多選。效果疊加上限 70%。讓社區不會「變老」。")
             params['brand_aging_countermeasures'] = selected_cm
         else:
-            selected_cm = st.multiselect("品牌老化對抗", list(BRAND_AGING_OPTIONS.keys()),
+            selected_cm = st.multiselect("社區活力維持方案", list(BRAND_AGING_OPTIONS.keys()),
                                           help="可多選。讓社區不會「變老」的策略。")
             params['brand_aging_countermeasures'] = selected_cm
 
@@ -254,7 +272,7 @@ def render_sidebar():
 
         if adv:
             params['alternative_investment_rate'] = st.slider(
-                "替代投資回報%", 3.0, 12.0, 6.0, 0.5,
+                "這筆錢做別的投資能賺多少 (%)", 3.0, 12.0, 6.0, 0.5,
                 help="如果這筆錢不蓋養老村，拿去做別的投資能賺多少。") / 100
             params['residual_value_appreciation'] = st.slider(
                 "殘值年增值率（%）", 0.0, 5.0, 3.0, step=0.5) / 100
@@ -313,21 +331,6 @@ def render_sidebar():
                 help="營運能力的最低值。預設 10，代表即使條件最差仍有基本運作能力。"
                      "設為 0 = 允許能力完全歸零（規格書原始行為）。",
             )
-
-            st.markdown("**蒙地卡羅擾動**")
-            _mc_label = st.select_slider(
-                "整體不確定性水位",
-                options=["保守（低擾動）", "中等（預設）", "積極（高擾動）"],
-                value="中等（預設）",
-                help="控制所有 MC 擾動參數的幅度。"
-                     "保守 = σ×0.5，中等 = 預設值，積極 = σ×1.5。",
-            )
-            _mc_map = {
-                "保守（低擾動）": 0.5,
-                "中等（預設）": 1.0,
-                "積極（高擾動）": 1.5,
-            }
-            params['mc_uncertainty_level'] = _mc_map[_mc_label]
 
         # --- Glossary ---
         with st.expander("術語表"):

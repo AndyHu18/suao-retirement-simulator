@@ -9,7 +9,7 @@ import os
 import re
 import numpy as np
 import streamlit as st
-from utils.formatting import RULE_NAMES
+from utils.formatting import fmt_billion, RULE_NAMES
 
 # ============================================================
 # System prompts
@@ -114,9 +114,9 @@ def generate_haiku_insights(mc, params, stress=None):
 
     charts = {
         'jcurve': f"J曲線：IRR={m['irr_median']:.1%}，回本={m['payback_median']:.1f}年，"
-                   f"25年末累計{m['final_cf_median']/1e9:.1f}B，崩潰率{m['collapse_prob']:.1%}",
-        'waterfall': f"瀑布圖：押金{r.cf_deposit_income.sum()/1e9:.1f}B、月費{r.cf_monthly_fee.sum()/1e9:.1f}B、"
-                     f"建設-{r.cf_construction.sum()/1e9:.1f}B、營運-{r.cf_operating.sum()/1e9:.1f}B",
+                   f"25年末累計{fmt_billion(m['final_cf_median'])}，崩潰率{m['collapse_prob']:.1%}",
+        'waterfall': f"瀑布圖：押金{fmt_billion(r.cf_deposit_income.sum())}、月費{fmt_billion(r.cf_monthly_fee.sum())}、"
+                     f"建設-{fmt_billion(r.cf_construction.sum())}、營運-{fmt_billion(r.cf_operating.sum())}",
         'occupancy': f"入住率：最終{r.occupancy_rate[-1]:.0%}，{na}/{params['total_phases']}期啟動，"
                      f"冷啟動期約{np.argmax(r.occupancy_rate > 0.5) / 4:.1f}年",
         'market': f"市場：25年後剩餘{r.market_pool_remaining[-1]/params['target_pool']:.0%}，"
@@ -145,8 +145,8 @@ def render_haiku_insight(key, insights):
     if text:
         text = _md_to_html(text)
         st.markdown(f"""<div style="background:#f7f7f5; border-left:3px solid #b08d57;
-            padding:10px 14px; margin:8px 0 16px; font-size:0.9em;
-            border-radius:0 8px 8px 0; color:#1a1a1a; line-height:1.6;">
+            padding:12px 16px; margin:8px 0 16px; font-size:0.9em;
+            border-radius: 8px; color:#1a1a1a; line-height:1.6;">
             <span style="color:#b08d57; font-weight:600;">AI 解讀：</span> {text}</div>""",
             unsafe_allow_html=True)
 
@@ -207,9 +207,9 @@ def _build_chart_context(chart_key, params, result):
         cf = r.cumulative_cashflow
         data = (
             f"此圖數據：\n"
-            f"Y1累計={cf[3]/1e9:.1f}B, Y5={cf[19]/1e9:.1f}B, Y10={cf[39]/1e9:.1f}B, "
-            f"Y15={cf[59]/1e9:.1f}B, Y25={cf[99]/1e9:.1f}B\n"
-            f"最終淨現金流={cf[99]/1e9:.1f}B\n"
+            f"Y1累計={fmt_billion(cf[3])}, Y5={fmt_billion(cf[19])}, Y10={fmt_billion(cf[39])}, "
+            f"Y15={fmt_billion(cf[59])}, Y25={fmt_billion(cf[99])}\n"
+            f"最終淨現金流={fmt_billion(cf[99])}\n"
             f"啟動{len(r.phase_activations)}/{params['total_phases']}期"
         )
     elif chart_key in ('waterfall', 'waterfall_s'):
@@ -367,7 +367,12 @@ def render_ai_analysis(params, mc=None, stress=None):
     # === Layer 1: Haiku auto-analysis (runs automatically after MC) ===
     client = _get_client()
     if not client:
-        st.warning("需要 Anthropic API Key 才能使用 AI 分析功能")
+        st.info(
+            "使用 AI 分析功能需要 Anthropic API Key\n\n"
+            "- 到 [console.anthropic.com](https://console.anthropic.com) 申請\n"
+            "- 每次報告約 $0.50-$2.00（美元）\n"
+            "- Key 只在本次瀏覽器使用，不會被儲存"
+        )
         user_key = st.text_input(
             "輸入 Anthropic API Key",
             type="password",
@@ -403,8 +408,7 @@ def render_ai_analysis(params, mc=None, stress=None):
     with col2:
         if 'opus_report' in st.session_state:
             st.caption("已有深度報告。可再次點擊更新，或在下方追問。")
-        else:
-            st.caption("由 Opus 生成完整七部分顧問報告（含 4 組對比模擬，約 30-60 秒）")
+        st.caption("由 Opus 生成完整七部分顧問報告（含 4 組對比模擬，約 30-60 秒）")
 
     if not run_btn and 'opus_report' not in st.session_state:
         return
@@ -474,6 +478,7 @@ def render_ai_analysis(params, mc=None, stress=None):
 
         ai_tip_box.empty()
         ai_progress.empty()
+        st.success(f"報告完成 | 共 {len(full_text)} 字")
 
         st.session_state.opus_report = full_text
         st.session_state.consultant_history = [
@@ -484,6 +489,14 @@ def render_ai_analysis(params, mc=None, stress=None):
     # Display cached report (after rerun or when not clicking run_btn)
     elif 'opus_report' in st.session_state and st.session_state.opus_report:
         st.markdown("#### 深度顧問報告")
+        st.markdown("""
+<div style="background:#f9f6f0;border:1px solid #e8e0d4;border-radius:8px;padding:12px 16px;margin:8px 0 16px;">
+<b style="color:#8b7355;">目錄</b><br>
+<span style="color:#6b5b3e;font-size:0.9em;">
+一、整體判斷 · 二、因果診斷 · 三、組合效應 · 四、配套行動方案 · 五、風險地圖 · 六、決策者建議 · 七、觸點設計
+</span>
+</div>
+""", unsafe_allow_html=True)
         st.markdown(st.session_state.opus_report)
 
     # --- Follow-up chat ---
@@ -565,7 +578,7 @@ def _build_opus_prompt(params, metrics, comparison, r, stress):
 
     lines.append("\n## 模擬結果")
     lines.append(f"- IRR: {metrics['irr_median']:.1%} | 崩潰: {metrics['collapse_prob']:.1%}")
-    lines.append(f"- 回本: {metrics['payback_median']:.1f}年 | 最大需求: {metrics['max_funding_need']/1e9:.1f}B")
+    lines.append(f"- 回本: {metrics['payback_median']:.1f}年 | 最大需求: {fmt_billion(metrics['max_funding_need'])}")
     lines.append(f"- 啟動: {len(r.phase_activations)}/{params['total_phases']}期")
 
     lines.append("\n## 逐年數據")

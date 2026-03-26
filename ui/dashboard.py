@@ -61,7 +61,51 @@ def render_dashboard(mc, params, stress=None):
                 ▸&ensp;{c['message']}</span>
             </div>""", unsafe_allow_html=True)
 
-    # --- B. Three Big Numbers ---
+    # --- Phase activation failure warning ---
+    _median_idx = np.argsort(mc['cf_curves'][:, -1])[mc['n_runs'] // 2]
+    _na = len(mc['results'][_median_idx].phase_activations)
+    _nt = params['total_phases']
+    if _na < _nt:
+        _completed_units = sum(params['phase_units'][:_na])
+        _total_units = sum(params['phase_units'][:_nt])
+        st.markdown(f"""<div style="background:#FAF6F1; border:1px solid #E8E2D8;
+            border-radius:8px; padding:14px 20px; margin:6px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <span style="color:#8B4513; font-size:0.95em; line-height:1.7;">
+            ⚠&ensp;第 {_na+1}-{_nt} 期無法啟動（入住率未達 {params['phase_activation_threshold']:.0%} 門檻）。
+            {_total_units:,} 戶計畫目前只能完成 {_completed_units:,} 戶。</span>
+        </div>""", unsafe_allow_html=True)
+
+    # --- B. Summary Banner + Three Big Numbers ---
+    _good = 0
+    _total = 3
+    _irr_ok = metrics['irr_median'] > 0.02
+    _cp_ok = metrics['collapse_prob'] < 0.10
+    _pb_ok = 0 < metrics['payback_median'] < 25
+    _good = sum([_irr_ok, _cp_ok, _pb_ok])
+    if _good == 3:
+        _banner_color, _banner_bg, _banner_icon = '#4A7C59', '#F2F8F4', '✓'
+        _banner_msg = f"三項核心指標全部達標"
+    elif _good >= 2:
+        _banner_color, _banner_bg, _banner_icon = '#B08D57', '#F9F6F0', '◐'
+        _banner_msg = f"{_good}/3 項達標，{3 - _good} 項需注意"
+    else:
+        _banner_color, _banner_bg, _banner_icon = '#8B4513', '#FAF6F1', '⚠'
+        _banner_msg = f"僅 {_good}/3 項達標，需重點關注"
+    _details = []
+    _details.append(f"報酬率 {'✓' if _irr_ok else '✗'}")
+    _details.append(f"崩潰風險 {'✓' if _cp_ok else '✗'}")
+    _details.append(f"回本時間 {'✓' if _pb_ok else '✗'}")
+    st.markdown(f"""<div style="background:{_banner_bg}; border:1px solid {_banner_color}33;
+        border-radius:8px; padding:10px 18px; margin:8px 0;
+        display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.2em;">{_banner_icon}</span>
+        <span style="color:{_banner_color}; font-weight:600; font-size:0.95em;">
+            {_banner_msg}</span>
+        <span style="color:#888; font-size:0.85em; margin-left:auto;">
+            {'　'.join(_details)}</span>
+    </div>""", unsafe_allow_html=True)
+
     _render_big_numbers(metrics, params)
 
     # --- F. Before/After ---
@@ -74,22 +118,25 @@ def render_dashboard(mc, params, stress=None):
     st.markdown("#### 25 年賺賠走勢圖")
     st.caption("藍色粗線＝最可能的情況。淺藍區域＝不確定範圍。零線以上＝賺（綠底），以下＝賠（紅底）。灰色虛線＝如果這筆錢拿去做別的投資。")
     _render_jcurve(mc, params, years)
-    render_haiku_insight('jcurve', insights)
-    render_chart_qa('jcurve', '25年賺賠走勢', params, r, _api_key)
+    with st.expander("AI 解讀", expanded=False):
+        render_haiku_insight('jcurve', insights)
+        render_chart_qa('jcurve', '25年賺賠走勢', params, r, _api_key)
 
     # --- D. Waterfall ---
     st.markdown("#### 25 年收支分解")
     st.caption("這張圖分解「為什麼賺/為什麼賠」——綠色是收入來源，紅色是支出項目，最右邊是淨結果。")
     _render_waterfall(r)
-    render_haiku_insight('waterfall', insights)
-    render_chart_qa('waterfall', '25年收支分解', params, r, _api_key)
+    with st.expander("AI 解讀", expanded=False):
+        render_haiku_insight('waterfall', insights)
+        render_chart_qa('waterfall', '25年收支分解', params, r, _api_key)
 
     # --- G. Occupancy (promoted to main area) ---
     st.markdown("#### 入住率走勢")
     st.caption("實線＝整體住滿程度。虛線＝各期。每次新期啟動，大量空房加入，整體會突然下降——這是正常現象。")
     _render_occupancy(r, params, years)
-    render_haiku_insight('occupancy', insights)
-    render_chart_qa('occupancy', '入住率走勢', params, r, _api_key)
+    with st.expander("AI 解讀", expanded=False):
+        render_haiku_insight('occupancy', insights)
+        render_chart_qa('occupancy', '入住率走勢', params, r, _api_key)
 
     # --- H. Phase Gantt ---
     with st.expander("分期啟動時程表", expanded=False):
@@ -102,7 +149,7 @@ def render_dashboard(mc, params, stress=None):
 
     # --- I. Stress Tests ---
     if stress:
-        with st.expander("壓力測試（故意模擬壞事發生）", expanded=False):
+        with st.expander("壓力測試（故意模擬 6 種最壞情況，看你的策略能不能撐住）", expanded=False):
             irr = metrics['irr_median']
             all_ok = all(d['survival_rate'] > 0.80 for d in stress.values())
             if all_ok and irr < 0:
@@ -141,17 +188,17 @@ def _render_judgment(m, p, r):
     # Premium color scheme: muted tones, never pure red/yellow
     if irr < 0 and na < nt * 0.5:
         border, bg, text_color, icon = '#8B4513', '#FAF6F1', '#5C3317', '⚠'
-        msg = (f"以目前配置，專案 25 年無法回本（年化報酬率 {irr:.1%}），"
+        msg = (f"以目前配置，專案 25 年無法回本（年化報酬率 {irr:.1%}，即每 100 元每年虧 {abs(irr)*100:.1f} 元），"
                f"且只有 {na}/{nt} 期能啟動。主要原因是入住速度不足以支撐後續分期。")
     elif irr < 0:
         border, bg, text_color, icon = '#8B4513', '#FAF6F1', '#5C3317', '⚠'
-        msg = f"專案預計虧損（年化報酬率 {irr:.1%}），需調整收入結構或降低成本。"
+        msg = f"專案預計虧損（年化報酬率 {irr:.1%}，即每 100 元每年虧 {abs(irr)*100:.1f} 元），需調整收入結構或降低成本。"
     elif irr < 0.06:
         border, bg, text_color, icon = '#B08D57', '#F9F6F0', '#6B5B3E', '◐'
-        msg = f"可行但回報偏低（年化報酬率 {irr:.1%}，行業標竿 8-10%）。有改善空間。"
+        msg = f"可行但回報偏低（年化報酬率 {irr:.1%}，即每 100 元每年賺 {abs(irr)*100:.1f} 元，行業標竿 8-10%）。有改善空間。"
     else:
         border, bg, text_color, icon = '#4A7C59', '#F2F8F4', '#2D5A3A', '✓'
-        msg = f"回報合理（年化報酬率 {irr:.1%}）。"
+        msg = f"回報合理（年化報酬率 {irr:.1%}，即每 100 元每年賺 {abs(irr)*100:.1f} 元）。"
 
     st.markdown(f"""<div style="background:{bg}; border-left:4px solid {border};
         padding:18px 24px; border-radius:6px; margin:12px 0;
@@ -225,7 +272,7 @@ def _render_jcurve(mc, p, years):
         x=np.concatenate([years, years[::-1]]),
         y=np.concatenate([pcts['P5'], pcts['P95'][::-1]]) / 1e8,
         fill='toself', fillcolor='rgba(99,110,250,0.1)',
-        line=dict(width=0), name='不確定範圍', showlegend=True))
+        line=dict(width=0), name='不確定範圍', showlegend=True, visible='legendonly'))
     fig.add_trace(go.Scatter(
         x=np.concatenate([years, years[::-1]]),
         y=np.concatenate([pcts['P25'], pcts['P75'][::-1]]) / 1e8,
@@ -298,7 +345,8 @@ def _render_occupancy(r, p, years):
     for pid, occ in r.phase_occupancy.items():
         if pid in r.phase_activations:
             fig.add_trace(go.Scatter(x=years, y=occ * 100,
-                                      name=f'第{pid+1}期', line=dict(width=1, dash='dot')))
+                                      name=f'第{pid+1}期', line=dict(width=1, dash='dot'),
+                                      visible='legendonly'))
     # Phase activation annotations
     for pid, q in r.phase_activations.items():
         if pid > 0:
@@ -352,6 +400,7 @@ def _render_stress(stress):
 
 def _render_market(r, p, years):
     """J. Market capacity consumption."""
+    st.caption(f"目標客群共 {p.get('target_pool', 35000):,} 人。若客群快速耗盡，後期入住將減速。")
     consumed_pct = 1 - r.market_pool_remaining / p['target_pool']
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=years, y=consumed_pct * 100, name='潛在客群已消耗比例',
@@ -379,6 +428,7 @@ def _render_unit_econ(r, p):
     c2.metric("每戶招募成本", fmt_billion(cac), help=GLOSSARY.get('CAC', ''))
     scale = "健康" if ratio > 3 else ("偏低" if ratio > 1 else "危險")
     c3.metric("收入 / 招募成本比", f"{ratio:.1f} 倍（{scale}）", help=GLOSSARY.get('LTV/CAC', ''))
+    st.caption(f"{ratio:.1f} 倍（健康標準：大於 3 倍。比值越高，獲客投資回報越大）")
 
 
 def _render_technical(r, years):
@@ -411,20 +461,29 @@ def _render_technical(r, years):
 def _render_health(mc, params, stress):
     """M. Health check panel."""
     checks = run_health_checks(mc, params, stress)
-    cols = st.columns(3)
-    for i, c in enumerate(checks):
-        with cols[i % 3]:
-            icon_clr = "#22C55E" if c['status'] == 'pass' else ("#F59E0B" if c['status'] == 'warn' else "#EF4444")
-            st.markdown(f'<span style="color:{icon_clr}">&#9679;</span> **{c["name"]}**', unsafe_allow_html=True)
-            st.caption(f"{c['value']} / 標準: {c['threshold']}")
-            if c['status'] != 'pass':
-                st.caption(c['explanation'])
-
     n_pass = sum(1 for c in checks if c['status'] == 'pass')
-    if n_pass == len(checks):
-        st.success(f"{len(checks)} 項檢查全部通過")
+    n_total = len(checks)
+
+    # Summary score line
+    if n_pass == n_total:
+        _h_color = "#22C55E"
+    elif n_pass >= n_total * 0.7:
+        _h_color = "#F59E0B"
     else:
-        st.info(f"通過 {n_pass}/{len(checks)} 項")
+        _h_color = "#EF4444"
+    st.markdown(f'<div style="font-size:1.1em; font-weight:600; margin-bottom:8px;">'
+                f'<span style="color:{_h_color};">健康分數：{n_pass}/{n_total} 通過</span></div>',
+                unsafe_allow_html=True)
+
+    with st.expander("查看 12 項詳細檢查"):
+        cols = st.columns(3)
+        for i, c in enumerate(checks):
+            with cols[i % 3]:
+                icon_clr = "#22C55E" if c['status'] == 'pass' else ("#F59E0B" if c['status'] == 'warn' else "#EF4444")
+                st.markdown(f'<span style="color:{icon_clr}">&#9679;</span> **{c["name"]}**', unsafe_allow_html=True)
+                st.caption(f"{c['value']} / 標準: {c['threshold']}")
+                if c['status'] != 'pass':
+                    st.caption(c['explanation'])
 
 
 # ============================================================
