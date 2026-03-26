@@ -52,8 +52,8 @@ def render_dashboard(mc, params, stress=None):
 
     # --- Contradiction warnings ---
     ctrs = detect_contradictions(mc, params, stress)
-    for _, msg in ctrs:
-        st.warning(msg)
+    for c in ctrs:
+        st.warning(f"{c['icon']} {c['message']}")
 
     # --- B. Three Big Numbers ---
     _render_big_numbers(metrics, params)
