@@ -343,7 +343,7 @@ if run_mc:
 
     # --- 模擬等待期間的小知識輪播（隨機 + 配圖 + 閱讀速度） ---
     import time
-    from ui.tip_carousel import get_shuffled_tips, render_tip_card
+    from ui.tip_carousel import get_shuffled_tips, render_tip_to_container
 
     tips = get_shuffled_tips()
     tip_box = st.empty()
@@ -353,8 +353,8 @@ if run_mc:
 
     def _show_tip(idx):
         tid, title, body = tips[idx % len(tips)]
-        html = render_tip_card(tid, title, body, idx % len(tips), len(tips), "模擬進行中")
-        tip_box.markdown(html, unsafe_allow_html=True)
+        tip_box.empty()
+        render_tip_to_container(tip_box, tid, title, body, idx % len(tips), len(tips), "模擬進行中")
 
     def _on_progress(done, total):
         pct = int(done / total * 70)

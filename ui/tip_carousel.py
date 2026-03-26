@@ -80,42 +80,37 @@ def _get_tip_image_b64(tip_id):
     return None
 
 
-def render_tip_card(tip_id, title, body, index, total, context="模擬進行中"):
-    """Render a single tip card with optional image."""
-    img_uri = _get_tip_image_b64(tip_id)
+def get_tip_image_path(tip_id):
+    """Get the file path for a tip image, or None if not found."""
+    img_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'tips', f'tip_{tip_id}.png')
+    if os.path.exists(img_path):
+        return os.path.abspath(img_path)
+    return None
 
-    if img_uri:
-        img_html = f"""
-        <div style="flex:0 0 120px;margin-right:20px;">
-            <img src="{img_uri}" style="width:120px;height:120px;border-radius:10px;object-fit:cover;" />
-        </div>"""
-        layout = "display:flex;align-items:center;"
-    else:
-        img_html = ""
-        layout = ""
 
-    # Bold markdown
-    import re
-    body_html = re.sub(r'\*\*(.+?)\*\*', r'<strong style="color:#b08d57;">\1</strong>', body)
+def render_tip_to_container(container, tip_id, title, body, index, total, context="模擬進行中"):
+    """Render a tip card into a Streamlit container using native components.
 
-    return f"""
-    <div style="background:white;border:1.5px solid #e0ddd7;border-radius:14px;
-        padding:24px 28px;margin:16px 0;max-width:750px;
-        box-shadow:0 2px 12px rgba(176,141,87,0.08);
-        transition:all 0.3s ease;">
-        <div style="color:#b08d57;font-weight:600;font-size:0.8em;
-            letter-spacing:0.08em;margin-bottom:12px;text-transform:uppercase;">
-            {context} · 小知識 {index + 1}/{total}</div>
-        <div style="{layout}">
-            {img_html}
-            <div>
-                <div style="color:#1a1a1a;font-size:1.1em;font-weight:700;margin-bottom:8px;
-                    line-height:1.4;">{title}</div>
-                <div style="color:#4a4a4a;font-size:0.95em;line-height:1.8;">{body_html}</div>
-            </div>
-        </div>
-    </div>
+    Uses st.image + st.markdown instead of raw HTML to avoid rendering issues.
     """
+    import re
+    # Bold markdown (keep as markdown, not HTML)
+    body_md = body  # already uses **bold** syntax
+
+    with container.container():
+        st.caption(f"🔖 {context} · 小知識 {index + 1}/{total}")
+
+        img_path = get_tip_image_path(tip_id)
+        if img_path:
+            col_img, col_text = st.columns([1, 4])
+            with col_img:
+                st.image(img_path, width=120)
+            with col_text:
+                st.markdown(f"**{title}**")
+                st.markdown(body_md, unsafe_allow_html=False)
+        else:
+            st.markdown(f"**{title}**")
+            st.markdown(body_md, unsafe_allow_html=False)
 
 
 def get_shuffled_tips():
