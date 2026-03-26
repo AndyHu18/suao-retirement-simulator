@@ -8,9 +8,12 @@ from .financial import calc_irr
 from .parameters import sample_mc_params, STRESS_SCENARIOS
 
 
-def run_monte_carlo(params, n_runs=1000, seed=42):
+def run_monte_carlo(params, n_runs=1000, seed=42, progress_callback=None):
     """
     Run N Monte Carlo simulations with parameter perturbation.
+
+    Args:
+        progress_callback: optional callable(completed, total) called every batch
 
     Returns:
         dict with:
@@ -28,11 +31,17 @@ def run_monte_carlo(params, n_runs=1000, seed=42):
     # Collect cumulative CF curves for percentile calculation
     cf_curves = np.zeros((n_runs, n_quarters))
 
+    # Report interval: every ~10% or at least every 50 runs
+    report_interval = max(1, min(50, n_runs // 10))
+
     for i in range(n_runs):
         p = sample_mc_params(params, rng)
         r = run_simulation(p, rng=np.random.RandomState(rng.randint(0, 2**31)))
         results.append(r)
         cf_curves[i] = r.cumulative_cashflow
+
+        if progress_callback and (i + 1) % report_interval == 0:
+            progress_callback(i + 1, n_runs)
 
     # --- Aggregate metrics ---
     # Collapse probability

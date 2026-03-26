@@ -70,7 +70,7 @@ def _md_to_html(text):
     # Inline code: `text` -> <code>
     text = re.sub(r'`(.+?)`', r'<code style="background:#f0ede8;padding:1px 4px;border-radius:3px;font-size:13px;">\1</code>', text)
     # Lists: - item -> bullet
-    text = re.sub(r'<p([^>]*)>[\s]*[-\u2022]\s*', r'<p\1 style="padding-left:16px;">\u2022 ', text)
+    text = re.sub(r'<p([^>]*)>[\s]*[-\u2022]\s*', '<p\\1 style="padding-left:16px;">\u2022 ', text)
     return text
 
 

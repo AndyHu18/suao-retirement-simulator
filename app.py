@@ -381,21 +381,36 @@ if run_mc:
          "如果有 H 會館，每年 6,000 位高淨值客人中，約 3% 會主動諮詢、12% 會成交。"
          "這等於每年多 20+ 戶的穩定來源，不靠廣告。"),
     ]
-    tip = random.choice(_TIPS)
+    # 輪播小知識 + progress bar
+    random.shuffle(_TIPS)
     tip_box = st.empty()
-    tip_box.markdown(f"""
-    <div style="background:white;border:1.5px solid #e0ddd7;border-radius:12px;
-        padding:24px 28px;margin:16px 0;max-width:700px;">
-        <div style="color:#b08d57;font-weight:600;font-size:0.85em;
-            letter-spacing:0.06em;margin-bottom:8px;">模擬進行中 · 小知識</div>
-        <div style="color:#1a1a1a;font-size:1.1em;font-weight:600;margin-bottom:8px;">
-            {tip[0]}</div>
-        <div style="color:#4a4a4a;font-size:0.95em;line-height:1.7;">{tip[1]}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
     progress_bar = st.progress(0, text=f"正在模擬 {mc_runs:,} 種不同情境...")
-    mc = run_monte_carlo(params, n_runs=mc_runs, seed=42)
+    _tip_idx = [0]  # mutable for closure
+
+    def _render_tip(idx):
+        tip = _TIPS[idx % len(_TIPS)]
+        tip_box.markdown(f"""
+        <div style="background:white;border:1.5px solid #e0ddd7;border-radius:12px;
+            padding:24px 28px;margin:16px 0;max-width:700px;">
+            <div style="color:#b08d57;font-weight:600;font-size:0.85em;
+                letter-spacing:0.06em;margin-bottom:8px;">模擬進行中 · 小知識 ({idx + 1}/{len(_TIPS)})</div>
+            <div style="color:#1a1a1a;font-size:1.1em;font-weight:600;margin-bottom:8px;">
+                {tip[0]}</div>
+            <div style="color:#4a4a4a;font-size:0.95em;line-height:1.7;">{tip[1]}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    def _on_progress(done, total):
+        pct = int(done / total * 70)  # MC 佔 0-70%
+        progress_bar.progress(pct, text=f"已完成 {done:,} / {total:,} 次模擬...")
+        # 每 10% 換一條小知識
+        new_idx = done * len(_TIPS) // total
+        if new_idx != _tip_idx[0]:
+            _tip_idx[0] = new_idx
+            _render_tip(new_idx)
+
+    _render_tip(0)
+    mc = run_monte_carlo(params, n_runs=mc_runs, seed=42, progress_callback=_on_progress)
     metrics = extract_metrics(mc)
     mc['_metrics'] = metrics
     progress_bar.progress(70, text="模擬完成！正在跑壓力測試...")
