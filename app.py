@@ -80,7 +80,7 @@ st.markdown("""
 # Hero banner
 _hero_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'hero_banner.png')
 if os.path.exists(_hero_path):
-    st.image(_hero_path, use_container_width=True)
+    st.image(_hero_path, width="stretch")
 
 # ============================================================
 # 使用指南 — 卡片式設計
@@ -407,7 +407,7 @@ with col_btn:
     run_mc = st.button(
         f"開始蒙地卡羅模擬（{mc_runs:,} 次）",
         type="primary",
-        use_container_width=True,
+        width="stretch",
     )
 
 if 'mc' in st.session_state:
@@ -473,14 +473,16 @@ if run_mc:
     with st.spinner("正在跑 6 組壓力測試（故意模擬壞事發生）..."):
         stress = run_stress_tests(params, n_runs=200)
 
-    progress_bar.progress(100, text="完成！正在生成分析報告...")
-    tip_box.empty()  # 模擬完成後清除提示
+    progress_bar.progress(100, text="完成！")
+    tip_box.empty()
     progress_bar.empty()
 
     st.session_state.mc = mc
     st.session_state.stress = stress
     st.session_state.current_metrics = metrics
     st.session_state.current_params = dict(params)
+
+    st.success("模擬完成！往下滾動查看完整圖表，或點擊下方「AI 分析報告」tab 啟動 AI 顧問分析。")
 
 # === Dashboard ===
 if mc is not None:
