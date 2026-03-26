@@ -50,10 +50,16 @@ def render_dashboard(mc, params, stress=None):
     # --- A. Summary Judgment Box ---
     _render_judgment(metrics, params, r)
 
-    # --- Contradiction warnings ---
+    # --- Contradiction insights (styled cards instead of yellow st.warning) ---
     ctrs = detect_contradictions(mc, params, stress)
-    for c in ctrs:
-        st.warning(f"{c['icon']} {c['message']}")
+    if ctrs:
+        for c in ctrs:
+            st.markdown(f"""<div style="background:#F9F7F3; border:1px solid #E8E2D8;
+                border-radius:8px; padding:14px 20px; margin:6px 0;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <span style="color:#8B7355; font-size:0.95em; line-height:1.7;">
+                💡&ensp;{c['message']}</span>
+            </div>""", unsafe_allow_html=True)
 
     # --- B. Three Big Numbers ---
     _render_big_numbers(metrics, params)
@@ -127,28 +133,32 @@ def render_dashboard(mc, params, stress=None):
 # ============================================================
 
 def _render_judgment(m, p, r):
-    """A. Colored judgment box."""
+    """A. Colored judgment box — premium palette."""
     irr = m['irr_median']
     na = len(r.phase_activations)
     nt = p['total_phases']
 
+    # Premium color scheme: muted tones, never pure red/yellow
     if irr < 0 and na < nt * 0.5:
-        color, bg = '#c0392b', '#fdedec'
+        border, bg, text_color, icon = '#8B4513', '#FAF6F1', '#5C3317', '⚠'
         msg = (f"以目前配置，專案 25 年無法回本（年化報酬率 {irr:.1%}），"
                f"且只有 {na}/{nt} 期能啟動。主要原因是入住速度不足以支撐後續分期。")
     elif irr < 0:
-        color, bg = '#c0392b', '#fdedec'
+        border, bg, text_color, icon = '#8B4513', '#FAF6F1', '#5C3317', '⚠'
         msg = f"專案預計虧損（年化報酬率 {irr:.1%}），需調整收入結構或降低成本。"
     elif irr < 0.06:
-        color, bg = '#d4ac0d', '#fef9e7'
+        border, bg, text_color, icon = '#B08D57', '#F9F6F0', '#6B5B3E', '◐'
         msg = f"可行但回報偏低（年化報酬率 {irr:.1%}，行業標竿 8-10%）。有改善空間。"
     else:
-        color, bg = '#27ae60', '#eafaf1'
+        border, bg, text_color, icon = '#4A7C59', '#F2F8F4', '#2D5A3A', '✓'
         msg = f"回報合理（年化報酬率 {irr:.1%}）。"
 
-    st.markdown(f"""<div style="background:{bg}; border-left:5px solid {color};
-        padding:16px 20px; border-radius:8px; margin:10px 0;">
-        <span style="color:{color}; font-size:1.1em; font-weight:600;">{msg}</span>
+    st.markdown(f"""<div style="background:{bg}; border-left:4px solid {border};
+        padding:18px 24px; border-radius:6px; margin:12px 0;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+        <span style="color:{text_color}; font-size:1.05em; font-weight:600;
+            letter-spacing:0.01em; line-height:1.6;">
+            {icon}&ensp;{msg}</span>
     </div>""", unsafe_allow_html=True)
 
 

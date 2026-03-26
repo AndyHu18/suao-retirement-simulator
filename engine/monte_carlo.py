@@ -31,8 +31,8 @@ def run_monte_carlo(params, n_runs=1000, seed=42, progress_callback=None):
     # Collect cumulative CF curves for percentile calculation
     cf_curves = np.zeros((n_runs, n_quarters))
 
-    # Report interval: every ~10% or at least every 50 runs
-    report_interval = max(1, min(50, n_runs // 10))
+    # Report interval: frequent enough for UI updates (~every 2% or 20 runs)
+    report_interval = max(1, min(20, n_runs // 50))
 
     for i in range(n_runs):
         p = sample_mc_params(params, rng)
