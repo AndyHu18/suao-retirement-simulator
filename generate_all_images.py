@@ -16,7 +16,7 @@ MODEL = "gemini-3-pro-image-preview"  # Nano Banana Pro — 唯一允許的生�
 
 # Premium style directive shared by all prompts
 STYLE = (
-    "Ultra-premium minimalist illustration. "
+    "Ultra-premium minimalist illustration. Square 1:1 aspect ratio. "
     "Color palette: warm ivory (#F9F6F0) background, deep gold (#B08D57) accents, "
     "charcoal (#2C2C2C) details, sage green (#4A7C59) highlights. "
     "Style: elegant vector art with subtle gradients and soft shadows, "
@@ -138,16 +138,30 @@ def generate_image(name, filepath, prompt):
 
 
 def compress_image(filepath, max_size=240):
-    """Compress to max_size x max_size for tips, keep hero larger."""
+    """Compress to 1:1 square for tips, keep hero as banner."""
     from PIL import Image
     img = Image.open(filepath)
     if "hero" in filepath:
-        # Hero: resize to 800px wide, keep aspect ratio
         w, h = img.size
-        new_w = 800
-        new_h = int(h * new_w / w)
-        img = img.resize((new_w, new_h), Image.LANCZOS)
+        new_w = 1200
+        target_ratio = 4.0
+        current_ratio = w / h
+        if current_ratio < target_ratio:
+            new_h = int(w / target_ratio)
+            top = (h - new_h) // 2
+            img = img.crop((0, top, w, top + new_h))
+        else:
+            new_w_crop = int(h * target_ratio)
+            left = (w - new_w_crop) // 2
+            img = img.crop((left, 0, left + new_w_crop, h))
+        img = img.resize((1200, 300), Image.LANCZOS)
     else:
+        # Tips: crop to 1:1 square then resize
+        w, h = img.size
+        s = min(w, h)
+        left = (w - s) // 2
+        top = (h - s) // 2
+        img = img.crop((left, top, left + s, top + s))
         img = img.resize((max_size, max_size), Image.LANCZOS)
     img.save(filepath, 'PNG', optimize=True)
     new_size = os.path.getsize(filepath)
