@@ -285,7 +285,7 @@ def _render_jcurve(mc, p, years):
                               name='最可能走勢'))
 
     # Zero line
-    fig.add_hline(y=0, line_dash="dash", line_color="red", annotation_text="損益平衡線")
+    fig.add_hline(y=0, line_dash="dash", line_color="#A0522D", annotation_text="損益平衡線")
 
     # Breakeven annotation
     pos = np.where(p50 > 0)[0]
@@ -326,8 +326,8 @@ def _render_waterfall(r):
         orientation="v", measure=measures,
         x=categories, y=[v / 1e8 for v in values],
         connector=dict(line=dict(color="rgb(63,63,63)")),
-        increasing=dict(marker_color="#27ae60"),
-        decreasing=dict(marker_color="#c0392b"),
+        increasing=dict(marker_color="#4A7C59"),
+        decreasing=dict(marker_color="#8B4513"),
         totals=dict(marker_color="#2980b9"),
         text=[fmt_billion_short(v) for v in values],
         textposition="outside",
@@ -356,7 +356,7 @@ def _render_occupancy(r, p, years):
 
     fig.add_hline(y=85, line_dash="dash", line_color="orange", annotation_text="85% 警戒線")
     fig.add_hline(y=p['phase_activation_threshold'] * 100, line_dash="dash",
-                  line_color="red", annotation_text=f"{p['phase_activation_threshold']:.0%} 啟動門檻")
+                  line_color="#A0522D", annotation_text=f"{p['phase_activation_threshold']:.0%} 啟動門檻")
     fig.update_layout(yaxis_title="入住率（%）", xaxis_title="年",
                       height=400, margin=dict(l=50, r=20, t=30, b=40))
     st.plotly_chart(_styled(fig), width='stretch')
@@ -377,7 +377,7 @@ def _render_gantt(r, p, years):
                                   name='營運中' if pid == 0 else None, showlegend=(pid == 0)))
         else:
             fig.add_trace(go.Bar(y=[label], x=[0], base=0, orientation='h',
-                                  marker_color='#e74c3c', name='未啟動' if pid == p['total_phases'] - 1 else None,
+                                  marker_color='#A0522D', name='未啟動' if pid == p['total_phases'] - 1 else None,
                                   showlegend=(pid == p['total_phases'] - 1)))
     fig.update_layout(barmode='overlay', xaxis_title="年", height=350,
                       margin=dict(l=140, r=20, t=30, b=40))
@@ -406,7 +406,7 @@ def _render_market(r, p, years):
     fig.add_trace(go.Scatter(x=years, y=consumed_pct * 100, name='潛在客群已消耗比例',
                               line=dict(color='#636EFA', width=2)))
     fig.add_hline(y=70, line_dash="dash", line_color="orange", annotation_text="70% 警戒")
-    fig.add_hline(y=100, line_dash="dash", line_color="red", annotation_text="100% 耗盡")
+    fig.add_hline(y=100, line_dash="dash", line_color="#A0522D", annotation_text="100% 耗盡")
     fig.update_layout(yaxis_title="市場已消耗（%）", xaxis_title="年",
                       yaxis_range=[0, 120], height=350,
                       margin=dict(l=50, r=20, t=30, b=40))
@@ -446,7 +446,7 @@ def _render_technical(r, years):
         st.caption("營運能力 = 日常管理的水準（0-100 分）。越有經驗分數越高。")
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=years, y=r.operational_capability, name='營運能力'))
-        fig.add_hline(y=40, line_dash="dot", line_color="red", annotation_text="40 分 = 危險線")
+        fig.add_hline(y=40, line_dash="dot", line_color="#A0522D", annotation_text="40 分 = 危險線")
         fig.update_layout(yaxis_title="分數（0-100）", xaxis_title="年", height=300, yaxis_range=[0, 100])
         st.plotly_chart(_styled(fig), width='stretch')
     with t3:
@@ -509,21 +509,23 @@ def render_dashboard_single(r, params):
     final_cf = r.cumulative_cashflow[-1]
     cf_yi = fmt_billion_short(abs(final_cf))
     if final_cf < 0 and na < nt * 0.5:
-        color, bg = '#c0392b', '#fdedec'
+        border, bg, text_color = '#8B4513', '#FAF6F1', '#5C3317'
         msg = f"預覽：目前配置 25 年累計虧損 {cf_yi}，只有 {na}/{nt} 期能啟動。點擊「開始模擬」看完整分析。"
     elif final_cf < 0:
-        color, bg = '#c0392b', '#fdedec'
+        border, bg, text_color = '#8B4513', '#FAF6F1', '#5C3317'
         msg = f"預覽：25 年累計虧損 {cf_yi}。點擊「開始模擬」看完整分析。"
     elif final_cf < params['total_budget'] * 0.1:
-        color, bg = '#d4ac0d', '#fef9e7'
+        border, bg, text_color = '#B08D57', '#F9F6F0', '#6B5B3E'
         msg = f"預覽：25 年累計獲利 {cf_yi}，但相對投入偏低。"
     else:
-        color, bg = '#27ae60', '#eafaf1'
+        border, bg, text_color = '#4A7C59', '#F2F8F4', '#2D5A3A'
         msg = f"預覽：25 年累計獲利 {cf_yi}。"
 
-    st.markdown(f"""<div style="background:{bg}; border-left:5px solid {color};
-        padding:16px 20px; border-radius:8px; margin:10px 0;">
-        <span style="color:{color}; font-size:1.05em;">{msg}</span>
+    st.markdown(f"""<div style="background:{bg}; border-left:4px solid {border};
+        padding:18px 24px; border-radius:6px; margin:12px 0;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+        <span style="color:{text_color}; font-size:1.05em; font-weight:600;
+            letter-spacing:0.01em; line-height:1.6;">{msg}</span>
     </div>""", unsafe_allow_html=True)
 
     # --- Quick numbers ---
@@ -543,7 +545,7 @@ def render_dashboard_single(r, params):
     cf_yi_arr = r.cumulative_cashflow / 1e8  # 億
     fig.add_trace(go.Scatter(x=years, y=cf_yi_arr, line=dict(color='#636EFA', width=2.5),
                               name='累計現金流'))
-    fig.add_hline(y=0, line_dash="dash", line_color="red", annotation_text="損益平衡線")
+    fig.add_hline(y=0, line_dash="dash", line_color="#A0522D", annotation_text="損益平衡線")
 
     # Breakeven
     pos = np.where(cf_yi_arr > 0)[0]
