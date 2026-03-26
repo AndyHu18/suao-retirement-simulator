@@ -355,10 +355,13 @@ def render_ai_analysis(params, mc=None, stress=None):
 
     if not has_mc:
         st.markdown(
-            '<div style="background:#f7f7f5;border-radius:10px;'
-            'padding:16px 20px;border-left:3px solid #b08d57;">'
-            '<span style="color:#4a4a4a;font-size:1em;">'
-            '請先點擊上方「<b>開始蒙地卡羅模擬</b>」跑完模擬後，AI 會自動生成初步分析。'
+            '<div style="background:#f9f6f0;border-radius:10px;'
+            'padding:20px 24px;border-left:4px solid #b08d57;'
+            'box-shadow:0 1px 4px rgba(0,0,0,0.04);">'
+            '<span style="color:#5C3317;font-size:1.05em;font-weight:600;">'
+            '請先點擊上方「開始蒙地卡羅模擬」</span><br>'
+            '<span style="color:#8b7355;font-size:0.9em;margin-top:6px;display:inline-block;">'
+            '跑完 1,000 次模擬後，AI 會自動生成初步分析，並開放「啟動深度顧問分析」按鈕。'
             '</span></div>',
             unsafe_allow_html=True,
         )
