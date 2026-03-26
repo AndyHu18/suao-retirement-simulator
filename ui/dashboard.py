@@ -58,7 +58,7 @@ def render_dashboard(mc, params, stress=None):
                 border-radius:8px; padding:14px 20px; margin:6px 0;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <span style="color:#8B7355; font-size:0.95em; line-height:1.7;">
-                💡&ensp;{c['message']}</span>
+                ▸&ensp;{c['message']}</span>
             </div>""", unsafe_allow_html=True)
 
     # --- B. Three Big Numbers ---
@@ -187,7 +187,7 @@ def _render_big_numbers(m, p):
             st.metric("回本時間", f"{pb:.1f} 年", help=GLOSSARY.get('回本時間', ''))
             st.caption(f"行業一般 10-15 年 · {scale}")
         else:
-            st.metric("回本時間", "⚫ 25 年內未回本", help=GLOSSARY.get('回本時間', ''))
+            st.metric("回本時間", "25 年內未回本", help=GLOSSARY.get('回本時間', ''))
             st.caption("需要調整策略")
 
 

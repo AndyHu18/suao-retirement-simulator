@@ -98,7 +98,7 @@ def render_tip_to_container(container, tip_id, title, body, index, total, contex
     body_md = body  # already uses **bold** syntax
 
     with container.container():
-        st.caption(f"🔖 {context} · 小知識 {index + 1}/{total}")
+        st.caption(f"{context} - 小知識 {index + 1}/{total}")
 
         img_path = get_tip_image_path(tip_id)
         if img_path:

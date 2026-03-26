@@ -139,13 +139,13 @@ def render_sidebar():
         if adv:
             params['marketing_budget_monthly'] = st.slider("行銷預算（萬/月）", 100, 5000, 500, 100) * 1e4
             st.markdown("---")
-            st.caption("🔴 以下為低可信度參數（建議用實際數據替換）")
+            st.caption("[低可信度]以下為低可信度參數（建議用實際數據替換）")
             params['target_pool'] = st.number_input(
                 "目標客群池", 10000, 100000, int(params['target_pool']), 1000,
-                help="🔴 低可信度（±50%+）。大台北65歲以上高淨值人口估計。有實際市調數據請替換。")
+                help="[低可信度]低可信度（±50%+）。大台北65歲以上高淨值人口估計。有實際市調數據請替換。")
             params['base_annual_conversion'] = st.slider(
                 "基礎年轉化率 (%)", 0.1, 2.0, float(params['base_annual_conversion']) * 100, 0.1,
-                help="🔴 低可信度（±50%+）。目標客群每年轉為入住的比率。全球CCRC平均約0.5%。") / 100
+                help="[低可信度]低可信度（±50%+）。目標客群每年轉為入住的比率。全球CCRC平均約0.5%。") / 100
 
         st.divider()
 
@@ -176,13 +176,13 @@ def render_sidebar():
             params['debranding_level'] = st.slider("去標籤化程度", 1, 3, 2,
                 help="1=養生語言 2=生活方式 3=純生活品牌")
             st.markdown("---")
-            st.caption("🔴 以下為低可信度參數（建議用實際數據替換）")
+            st.caption("[低可信度]以下為低可信度參數（建議用實際數據替換）")
             params['staff_ratio'] = st.slider(
                 "每戶員工配比", 0.2, 0.8, float(params['staff_ratio']), 0.05,
-                help="🔴 低可信度（±50%+）。每位住戶對應的員工數。業界0.3-0.6。")
+                help="[低可信度]低可信度（±50%+）。每位住戶對應的員工數。業界0.3-0.6。")
             params['avg_staff_cost_monthly'] = st.number_input(
                 "員工平均月薪", 30000, 80000, int(params['avg_staff_cost_monthly']), 1000,
-                help="🔴 低可信度（±50%+）。蘇澳地區實際行情。")
+                help="[低可信度]低可信度（±50%+）。蘇澳地區實際行情。")
 
         st.divider()
 
@@ -260,13 +260,13 @@ def render_sidebar():
                 "殘值年增值率（%）", 0.0, 5.0, 3.0, step=0.5) / 100
             params['initial_brand_trust'] = st.slider(
                 "初始品牌信任", 0, 100, int(params['initial_brand_trust']),
-                help="🔴 低可信度（±50%+）。華友聯目前的養老品牌知名度。0=完全未知，100=業界標竿。")
+                help="[低可信度]低可信度（±50%+）。華友聯目前的養老品牌知名度。0=完全未知，100=業界標竿。")
 
         # ==========================================
         # Group 6: Advanced Model Assumptions
         # ==========================================
         st.divider()
-        with st.expander("⚙️ 進階模型假設", expanded=False):
+        with st.expander("進階模型假設", expanded=False):
             st.caption(
                 "以下參數影響模擬計算核心邏輯。"
                 "標有 ⚠️ 為模型假設而非實證數據。"

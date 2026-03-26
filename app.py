@@ -116,11 +116,11 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 
 | 組別 | 在決定什麼 |
 |------|----------|
-| 💰 資本與財務 | 錢從哪來、押金怎麼退 |
-| 🚀 需求引擎 | 怎麼讓人來住 |
-| 🏥 產品與營運 | 蓋什麼、誰來管 |
-| 📅 開發節奏 | 蓋幾期、怎麼防老化 |
-| 🌐 外部環境 | 外面世界會怎樣 |
+| 資本與財務 | 錢從哪來、押金怎麼退 |
+| 需求引擎 | 怎麼讓人來住 |
+| 產品與營運 | 蓋什麼、誰來管 |
+| 開發節奏 | 蓋幾期、怎麼防老化 |
+| 外部環境 | 外面世界會怎樣 |
 </div>
 """, unsafe_allow_html=True)
         with c2:
@@ -144,17 +144,17 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 
 策略調好後，點「**開始蒙地卡羅模擬**」：
 
-- 🎲 **1,000 種不同運氣**的完整模擬
-- 💥 **6 組壓力測試**（經濟崩盤、信任危機…）
-- ✅ **12 項健康檢查** + 矛盾偵測
-- 🤖 可啟動 **AI 顧問**做策略建議
+- **1,000 種不同運氣**的完整模擬
+- **6 組壓力測試**（經濟崩盤、信任危機…）
+- **12 項健康檢查** + 矛盾偵測
+- 可啟動 **AI 顧問**做策略建議
 </div>
 """, unsafe_allow_html=True)
         st.markdown("""
 <div style="background:linear-gradient(135deg,#f9f6f0,#f0ebe4);border-radius:10px;
     padding:14px 20px;margin:16px 0;border-left:4px solid #b08d57;">
     <span style="color:#8b7355;font-size:0.9em;">
-    💡 <b>預設值是最保守的「什麼都沒開」配置。</b>結果通常是虧損的——這是正常的，不是 bug。
+    <b>預設值是最保守的「什麼都沒開」配置。</b>結果通常是虧損的——這是正常的，不是 bug。
     目的是讓你看到「不做任何事」的後果，然後一步步加上配套、觀察每一步改善多少。
     </span>
 </div>
@@ -163,10 +163,10 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:14px 20px;margin:8px 0;">
     <span style="color:#8b7355;font-size:0.9em;">
     <b>跑完模擬後你會拿到什麼？</b><br>
-    ① 年化報酬率的分布範圍（不是一個數字，是一整條鐘型曲線）<br>
-    ② 「最壞情況下撐不撐得住」的壓力測試結果<br>
-    ③ 12 項自動健康檢查，幫你抓出隱藏的結構性問題<br>
-    ④ AI 顧問會標出「矛盾點」——例如報酬率為負但崩潰率很低，代表不會倒但一直在虧
+    1. 年化報酬率的分布範圍（不是一個數字，是一整條鐘型曲線）<br>
+    2. 「最壞情況下撐不撐得住」的壓力測試結果<br>
+    3. 12 項自動健康檢查，幫你抓出隱藏的結構性問題<br>
+    4. AI 顧問會標出「矛盾點」——例如報酬率為負但崩潰率很低，代表不會倒但一直在虧
     </span>
 </div>
 """, unsafe_allow_html=True)
@@ -176,7 +176,7 @@ with st.expander("如何使用這個模擬器？", expanded=True):
         st.markdown("模擬器把未來 **25 年切成 100 個季度**，每一季依序計算 **5 件事**，然後再用蒙地卡羅方法重複跑 1,000 遍。")
 
         st.markdown("---")
-        st.markdown("#### 📥 計算一：這一季有多少新住戶來？")
+        st.markdown("#### 計算一：這一季有多少新住戶來？")
         st.markdown("每季的新入住人數由 **11 個因子相乘** 再加上 H 會館導入：")
         st.markdown("""
 <div style="background:#f9f6f0;border:1px solid #e8e0d4;border-radius:8px;padding:16px;margin:8px 0;">
@@ -194,7 +194,7 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("#### 📤 計算二：這一季有多少住戶離開？")
+        st.markdown("#### 計算二：這一季有多少住戶離開？")
         st.markdown("""
 <div style="background:#f9f6f0;border:1px solid #e8e0d4;border-radius:8px;padding:16px;margin:8px 0;">
 <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
@@ -206,7 +206,7 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("#### 💰 計算三：錢怎麼進出？")
+        st.markdown("#### 計算三：錢怎麼進出？")
         st.markdown("""
 <div style="background:#f9f6f0;border:1px solid #e8e0d4;border-radius:8px;padding:16px;margin:8px 0;">
 <b style="color:#2e7d32;">收入</b>：月費（在住×月費×3）+ 新住戶押金 + 多元營收 + 醫療/溫泉外收<br>
@@ -215,15 +215,15 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("#### 📣 計算四：品牌信任怎麼變？")
+        st.markdown("#### 計算四：品牌信任怎麼變？")
         st.markdown("品牌信任 0-100 分，每季加減分：入住率>85% +2 / 信託等級×1.5 / 基礎衰減 -0.5 / 2%機率負面事件 -10~30 / 退費擠壓打95折")
 
         st.markdown("---")
-        st.markdown("#### 🏗️ 計算五：下一期能否啟動？")
+        st.markdown("#### 計算五：下一期能否啟動？")
         st.markdown("三條件同時滿足：**入住率 ≥ 80%** + **現金儲備 ≥ 250 天** + **建設金 ≥ 造價 30%**。啟動後施工 2 年。")
 
         st.markdown("---")
-        st.markdown("#### 📈 IRR（年化報酬率）怎麼算？")
+        st.markdown("#### IRR（年化報酬率）怎麼算？")
         st.markdown("把 100 季淨現金流 + 最後一季殘值，用**二分法**找到讓淨現值=0 的折現率。殘值 = 在住人數 × 押金 × 1.03^25。")
         st.markdown("""
 <div style="background:#f9f6f0;border-radius:8px;padding:12px 16px;margin:8px 0;border-left:4px solid #b08d57;">
@@ -232,7 +232,7 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("#### 💀 崩潰率：依信託等級分兩套邏輯")
+        st.markdown("#### 崩潰率：依信託等級分兩套邏輯")
         st.markdown("""
 <div style="background:#f9f6f0;border:1px solid #e8e0d4;border-radius:8px;padding:16px;margin:8px 0;">
 <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
@@ -243,7 +243,7 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("#### 🎲 蒙地卡羅：三級擾動 + 6 組壓力測試")
+        st.markdown("#### 蒙地卡羅：三級擾動 + 6 組壓力測試")
         st.markdown("每遍對 8 個參數加隨機擾動（**α穩定** ±15%：月費/人力/退費、**β中度** ±30%：轉化率/預算、**γ高度** ±50%：保險/H會館/資金成本）。約 7% 機率觸發宏觀衝擊連動。")
         st.markdown("另跑 6 組壓力測試：溫和衰退、嚴重衰退、信任危機、成本通膨、複合災難、無新血存活。存活率 >80% 為通過。")
 
@@ -252,7 +252,7 @@ with st.expander("如何使用這個模擬器？", expanded=True):
         st.markdown("""
 | 圖表 | 怎麼看 | 好的信號 | 壞的信號 |
 |------|--------|---------|---------|
-| **判斷框** | 一句話結論 | 🟢 綠色 | 🔴 紅色 |
+| **判斷框** | 一句話結論 | 良好（綠色） | 危險（紅色） |
 | **三個大數字** | 報酬率/危機率/回本 | IRR>5%, 崩潰<10% | IRR<0, 崩潰>20% |
 | **走勢圖** | 深色線=中位數，淺色帶=90%範圍 | 線穿過零線往上 | 帶子全在零以下 |
 | **收支分解** | 綠柱=收入，紅柱=支出 | 月費>營運成本 | 退費≈押金收入 |
@@ -274,7 +274,7 @@ with st.expander("如何使用這個模擬器？", expanded=True):
 <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
 <tr style="border-bottom:2px solid #b08d57;"><th style="padding:6px;">步驟</th><th style="padding:6px;">操作</th><th style="padding:6px;">預期效果</th><th style="padding:6px;">原理</th></tr>
 <tr style="border-bottom:1px solid #e8e0d4;"><td style="padding:6px;">0</td><td style="padding:6px;">先看預設結果</td><td style="padding:6px;">了解裸配置</td><td style="padding:6px;">基準線</td></tr>
-<tr style="border-bottom:1px solid #e8e0d4;"><td style="padding:6px;"><b>1</b></td><td style="padding:6px;">✅ 保險綁定</td><td style="padding:6px;">需求 1.0x→2.0x</td><td style="padding:6px;">最大單一推手</td></tr>
+<tr style="border-bottom:1px solid #e8e0d4;"><td style="padding:6px;"><b>1</b></td><td style="padding:6px;">保險綁定</td><td style="padding:6px;">需求 1.0x→2.0x</td><td style="padding:6px;">最大單一推手</td></tr>
 <tr style="border-bottom:1px solid #e8e0d4;"><td style="padding:6px;"><b>2</b></td><td style="padding:6px;">獨立信託</td><td style="padding:6px;">信任+3/季</td><td style="padding:6px;">品牌穩定+防擠兌</td></tr>
 <tr style="border-bottom:1px solid #e8e0d4;"><td style="padding:6px;"><b>3</b></td><td style="padding:6px;">區域醫院合作</td><td style="padding:6px;">需求+15%</td><td style="padding:6px;">抵消距離劣勢</td></tr>
 <tr style="border-bottom:1px solid #e8e0d4;"><td style="padding:6px;"><b>4</b></td><td style="padding:6px;">高規格溫泉</td><td style="padding:6px;">需求+20%+外收</td><td style="padding:6px;">蘇澳獨特優勢</td></tr>
@@ -336,7 +336,6 @@ st.markdown(f"""
     box-shadow:0 4px 20px rgba(176,141,87,0.12);">
 
   <div style="text-align:center;margin-bottom:20px;">
-    <span style="font-size:32px;letter-spacing:2px;">🎲</span>
     <h3 style="font-size:22px;font-weight:700;color:#1d1d1f;margin:8px 0 4px;
         letter-spacing:0.02em;">蒙地卡羅模擬</h3>
     <p style="font-size:13px;color:#8b7355;margin:0;letter-spacing:0.06em;">
@@ -381,7 +380,7 @@ with col_btn:
     )
 
 if 'mc' in st.session_state:
-    st.markdown('<p style="text-align:center;color:#86868b;font-size:13px;margin:4px 0 0;">✓ 已有模擬結果。調整參數後再次點擊可更新。</p>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center;color:#86868b;font-size:13px;margin:4px 0 0;">已有模擬結果。調整參數後再次點擊可更新。</p>', unsafe_allow_html=True)
 
 # Force clear stale caches when app version changes
 if st.session_state.get('_app_version') != _APP_VERSION:
@@ -412,10 +411,11 @@ if run_mc:
     tips = get_shuffled_tips()
     tip_box = st.empty()
     progress_bar = st.progress(0, text=f"正在模擬 {mc_runs:,} 種不同情境...")
-    _tip_state = [0]  # current tip index
-    # 每完成 N% 換一條小知識（確保至少換 3-5 次）
+    _tip_state = [0, time.time()]  # [current_index, last_switch_time]
+    # 混合模式：進度驅動 + 8 秒最低間隔
     _tips_to_show = min(len(tips), max(3, mc_runs // 200))
     _switch_every = max(1, mc_runs // _tips_to_show)
+    TIP_MIN_INTERVAL = 8  # 每條至少顯示 8 秒
 
     def _show_tip(idx):
         tid, title, body = tips[idx % len(tips)]
@@ -425,10 +425,12 @@ if run_mc:
     def _on_progress(done, total):
         pct = int(done / total * 70)
         progress_bar.progress(pct, text=f"已完成 {done:,} / {total:,} 次模擬...")
-        # 基於進度百分比輪播（不依賴時間，保證會換）
+        # 進度驅動但加 8 秒最低間隔
         new_idx = done // _switch_every
-        if new_idx != _tip_state[0]:
+        now = time.time()
+        if new_idx != _tip_state[0] and (now - _tip_state[1]) >= TIP_MIN_INTERVAL:
             _tip_state[0] = new_idx
+            _tip_state[1] = now
             _show_tip(new_idx)
 
     _show_tip(0)
@@ -457,7 +459,7 @@ else:
     render_dashboard_single(single, params)
 
 # === Tabs: AI Analysis + Methodology ===
-tab_ai, tab_method = st.tabs(["🤖 AI 分析報告", "📐 方法論"])
+tab_ai, tab_method = st.tabs(["AI 分析報告", "方法論"])
 
 with tab_ai:
     render_ai_analysis(params, mc=mc, stress=stress)
