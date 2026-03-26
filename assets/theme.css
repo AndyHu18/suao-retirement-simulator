@@ -258,31 +258,49 @@ section[data-testid="stSidebar"] .stCaption p {
   color: var(--charcoal) !important;
 }
 
-/* --- Tabs pill style --- */
+/* --- Tabs — large pill style, impossible to miss --- */
 .stTabs [data-baseweb="tab-list"] {
-  gap: 4px;
-  background: var(--bg-subtle);
-  border-radius: 10px;
-  padding: 4px;
-  border: 1px solid var(--border-light);
+  gap: 6px;
+  background: linear-gradient(135deg, #f9f6f0, #f0ebe4);
+  border-radius: 14px;
+  padding: 6px 8px;
+  border: 1.5px solid #d4c4a8;
+  box-shadow: 0 2px 8px rgba(176, 141, 87, 0.1);
+  justify-content: center;
 }
 
 .stTabs [data-baseweb="tab"] {
-  border-radius: 8px !important;
-  font-weight: 500 !important;
-  color: var(--text-secondary) !important;
-  padding: 8px 20px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 1.05em !important;
+  color: #8b7355 !important;
+  padding: 12px 28px !important;
+  letter-spacing: 0.04em !important;
+  transition: all 0.2s ease !important;
+  min-width: 120px !important;
+  text-align: center !important;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+  background: rgba(176, 141, 87, 0.08) !important;
+  color: #6b5b3e !important;
 }
 
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
-  background: var(--bg) !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
-  color: var(--charcoal) !important;
-  font-weight: 600 !important;
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(176, 141, 87, 0.18) !important;
+  color: #2c2c2c !important;
+  font-weight: 700 !important;
+  border: 1px solid #d4c4a8 !important;
 }
 
 .stTabs [data-baseweb="tab-highlight"] {
   display: none !important;
+}
+
+/* Tab panel content area */
+.stTabs [data-baseweb="tab-panel"] {
+  padding-top: 16px;
 }
 
 /* --- Dividers --- */

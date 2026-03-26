@@ -54,6 +54,11 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Hero banner
+_hero_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'hero_banner.png')
+if os.path.exists(_hero_path):
+    st.image(_hero_path, use_container_width=True)
+
 # ============================================================
 # 使用指南 — 卡片式設計
 # ============================================================
